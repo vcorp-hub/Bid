@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lender & Product Selection – BID Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #1C1C1C;
+    --teal:    #3a3a3a;
+    --slate:   #2a2a2a;
+    --sky:     #f7f5ec;
+    --mint:    #eaf1df;
+    --gold:    #c9a820;
+    --gold-bg: #fdf8e6;
+    --border:  #d6cfb0;
+    --text:    #1C1C1C;
+    --muted:   #6b6650;
+    --danger:  #b83232;
+    --white:   #ffffff;
+    --yellow:  #F2D16B;
+    --green:   #D8E8C2;
+    --forest:  #003700;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', Arial, sans-serif;
+    background: #e8ede4;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    background: #003700;
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky; top: 0; z-index: 100;
+    min-height: 60px;
+  }
+  .header-icon {
+    width: 38px; height: 38px;
+    background: #F2D16B;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; flex-shrink: 0;
+    color: #1C1C1C;
+  }
+  header h1 { font-size: 1.05rem; font-weight: 700; font-family: 'Lora', serif; }
+  header p  { font-size: 0.75rem; opacity: 0.65; margin-top: 1px; }
+  .header-pill {
+    margin-left: auto;
+    background: rgba(242,209,107,0.18);
+    border: 1px solid rgba(242,209,107,0.4);
+    border-radius: 20px;
+    padding: 4px 13px;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.85);
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .live-dot {
+    width: 7px; height: 7px; background: #F2D16B;
+    border-radius: 50%; box-shadow: 0 0 5px #F2D16B;
+    animation: blink 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* WORKSPACE */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex: 1;
+    height: calc(100vh - 60px);
+  }
+
+  /* LEFT FORM PANEL */
+  .form-panel {
+    background: #f0f4ee;
+    overflow-y: auto;
+    padding: 18px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    border-right: 2px solid #b8ccb0;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 5px rgba(28,28,28,0.08);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 9px 15px;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Lora', serif;
+    font-weight: 700; font-size: 0.78rem;
+    letter-spacing: 0.4px; text-transform: uppercase;
+  }
+  .ch1 { background: #003700; color: #fff; }
+  .ch2 { background: #F2D16B; color: #1C1C1C; }
+  .ch3 { background: #003700; color: #fff; border-bottom: 1px solid #004d00; }
+  .ch4 { background: var(--mint); color: #1a5c40; border-bottom: 1px solid #a8d8c4; }
+
+  .badge {
+    width: 19px; height: 19px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.67rem; font-weight: 900; flex-shrink: 0;
+  }
+  .ch1 .badge { background: rgba(255,255,255,0.18); color: #fff; }
+  .ch2 .badge { background: rgba(28,28,28,0.15); color: #1C1C1C; }
+  .ch3 .badge { background: rgba(255,255,255,0.2); color: #fff; }
+  .ch4 .badge { background: #1a5c40; color: #fff; }
+
+  .card-body { padding: 14px 15px; }
+
+  label {
+    display: block; font-size: 0.76rem; font-weight: 600;
+    color: #1C1C1C; margin-bottom: 4px; margin-top: 11px;
+  }
+  label:first-child { margin-top: 0; }
+
+  input[type=text], textarea, select {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 5px;
+    font-size: 0.82rem; color: var(--text);
+    background: #f7fbfd; font-family: inherit;
+    transition: border 0.15s, box-shadow 0.15s;
+  }
+  input[type=text]:focus, textarea:focus, select:focus {
+    outline: none; border-color: #003700;
+    background: #fff; box-shadow: 0 0 0 3px rgba(0,55,0,0.12);
+  }
+  textarea { resize: vertical; min-height: 58px; }
+
+  .checkbox-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6px; margin-top: 5px;
+  }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 7px;
+    background: #faf8f0; border-radius: 6px; padding: 7px 8px;
+    border: 1px solid #ddd8c0; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .check-item:hover { border-color: #003700; background: #eef5e8; }
+  .check-item input[type=checkbox] { margin-top: 2px; accent-color: #1C1C1C; flex-shrink: 0; }
+  .check-item span { font-size: 0.77rem; line-height: 1.35; }
+
+  .refi-row { margin-top: 9px; }
+  .refi-label {
+    font-size: 0.75rem; font-weight: 700; color: #c9a820;
+    display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+  }
+  .refi-pill {
+    background: #fdf8e6; border: 1px solid #ddd8a0;
+    border-radius: 10px; padding: 1px 7px;
+    font-size: 0.67rem; color: #c9a820; font-weight: 700;
+  }
+  .refi-check {
+    background: #fdf8e6 !important;
+    border-color: #ddd8a0 !important;
+  }
+  .refi-check:hover { border-color: #003700 !important; background: #eef5e8 !important; }
+  .refi-check input[type=checkbox] { accent-color: #c9a820 !important; }
+
+  .dynamic-list { display: flex; flex-direction: column; gap: 6px; }
+  .dynamic-item { display: flex; align-items: center; gap: 6px; }
+  .dynamic-item input[type=text] { flex: 1; }
+  .btn-remove {
+    background: #fdecea; border: 1px solid #f5bbb7; color: var(--danger);
+    border-radius: 5px; padding: 5px 8px; cursor: pointer;
+    font-size: 0.78rem; flex-shrink: 0;
+  }
+  .btn-remove:hover { background: #f9d0cc; }
+
+  .btn-add {
+    background: #f2f6f0; border: 1px dashed #003700; color: #003700;
+    border-radius: 6px; padding: 6px 12px; cursor: pointer;
+    font-size: 0.77rem; font-weight: 600; width: 100%; margin-top: 7px;
+  }
+  .btn-add:hover { background: #ddeedd; }
+
+  /* RIGHT PREVIEW PANEL */
+  .preview-panel {
+    background: #f2f5f0;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+
+  .preview-header {
+    background: #F2D16B;
+    padding: 10px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    min-height: 48px;
+  }
+  .ph-left { display: flex; align-items: center; gap: 8px; color: #1C1C1C; }
+  .ph-left h2 { font-size: 0.85rem; font-weight: 700; color: #1C1C1C; font-family: 'Lora', serif; }
+  .ph-left p  { font-size: 0.7rem; color: #1C1C1C; opacity: 0.65; }
+
+  .btn-copy {
+    background: #1C1C1C;
+    border: 1px solid #1C1C1C;
+    color: #F2D16B; border-radius: 6px; padding: 5px 13px;
+    font-size: 0.76rem; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-copy:hover { background: #333; }
+  .btn-copy.copied { background: #003700; border-color: #D8E8C2; color: #D8E8C2; }
+
+  .preview-body { flex: 1; padding: 20px 18px 40px; }
+
+  .preview-doc {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 14px rgba(26,58,92,0.09);
+    overflow: hidden;
+    min-height: 250px;
+  }
+  .doc-top {
+    background: #003700;
+    padding: 14px 18px; color: #fff;
+  }
+  .doc-top h3 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.4px; font-family: 'Lora', serif; }
+  .doc-top p  { font-size: 0.68rem; opacity: 0.55; margin-top: 2px; }
+
+  .doc-content {
+    padding: 18px 20px;
+    font-size: 0.84rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .placeholder-msg {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 20px; color: var(--muted); text-align: center; gap: 10px;
+  }
+  .placeholder-msg .ph-icon { font-size: 34px; opacity: 0.35; }
+  .placeholder-msg p { font-size: 0.8rem; max-width: 200px; line-height: 1.5; }
+
+  .note-para { margin-bottom: 13px; }
+
+  .note-bullets { margin: 0 0 13px 0; padding: 0; list-style: none; }
+  .note-bullets li {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 5px 0; border-bottom: 1px solid #eef2f5;
+    font-size: 0.82rem;
+  }
+  .note-bullets li:last-child { border-bottom: none; }
+  .b-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #F2D16B; flex-shrink: 0; margin-top: 7px;
+  }
+
+  .rejected-section {
+    margin-top: 14px; padding-top: 13px;
+    border-top: 1px dashed #b8ccb0;
+  }
+  .rejected-label {
+    font-size: 0.69rem; font-weight: 700; text-transform: uppercase;
+    color: #003700; letter-spacing: 0.5px; margin-bottom: 8px;
+    font-family: 'Lora', serif;
+  }
+  .rejected-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 5px 0; border-bottom: 1px solid #eef2f5; font-size: 0.82rem;
+  }
+  .rejected-item:last-child { border-bottom: none; }
+  .r-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #003700; flex-shrink: 0; margin-top: 7px;
+  }
+
+  .lender-name { font-weight: 700; color: #1C1C1C; text-decoration: underline; text-decoration-color: #003700; text-underline-offset: 2px; }
+
+  @media (max-width: 740px) {
+    .workspace { grid-template-columns: 1fr; height: auto; }
+    .preview-panel { min-height: 400px; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">🏦</div>
+  <div>
+    <h1>Lender &amp; Product Selection</h1>
+    <p>Best Interests Duty — Note Generator</p>
+  </div>
+  <div class="header-pill">
+    <div class="live-dot"></div>
+    Live Preview
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- ═══ LEFT: FORM ═══ -->
+  <div class="form-panel">
+
+    <div class="card">
+      <div class="card-header ch1"><div class="badge">1</div> Lenders Presented</div>
+      <div class="card-body">
+        <label>Lenders presented to client (comma-separated)</label>
+        <input type="text" id="lendersPresented" placeholder="e.g. ANZ, CBA, Westpac" oninput="updatePreview()">
+
+        <label>Selected lender</label>
+        <input type="text" id="selectedLender" placeholder="e.g. CBA" oninput="updatePreview()">
+
+        <label>Loan type</label>
+        <select id="loanType" onchange="updatePreview()">
+          <option value="">— Select —</option>
+          <option>Purchase</option>
+          <option>Refinance</option>
+          <option>Construction</option>
+          <option>Equity release</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header ch2"><div class="badge">2</div> Reasons for Selection</div>
+      <div class="card-body">
+        <label>Default reasons — untick to remove</label>
+        <div class="checkbox-grid">
+          <label class="check-item"><input type="checkbox" class="reason" value="Lowest fees of the lenders presented" checked onchange="updatePreview()"><span>Lowest fees of lenders presented</span></label>
+          <label class="check-item"><input type="checkbox" class="reason" value="Lowest overall cost when compared to the other lenders" checked onchange="updatePreview()"><span>Lowest overall cost vs others</span></label>
+          <label class="check-item"><input type="checkbox" class="reason" value="Offers offset and redraw feature" checked onchange="updatePreview()"><span>Offset &amp; redraw feature</span></label>
+          <label class="check-item"><input type="checkbox" class="reason" value="Maximises borrowing capacity" checked onchange="updatePreview()"><span>Maximises borrowing capacity</span></label>
+          <label class="check-item"><input type="checkbox" class="reason" value="Very competitive interest rate" checked onchange="updatePreview()"><span>Very competitive interest rate</span></label>
+        </div>
+
+        <div class="refi-row">
+          <div class="refi-label">Cash back offer <span class="refi-pill">Refinance only</span></div>
+          <label class="check-item refi-check">
+            <input type="checkbox" id="cashback" onchange="updatePreview()">
+            <span>Lender has confirmed cash back offer</span>
+          </label>
+        </div>
+
+        <label>Additional reasons <span style="color:var(--danger);font-weight:700">*</span> <span style="font-weight:400;color:var(--muted);font-style:italic">(refer to handover notes)</span></label>
+        <p style="font-size:0.72rem;color:var(--danger);margin-bottom:6px;font-style:italic">Required — refer to handover notes for client-specific reasons.</p>
+        <div class="dynamic-list" id="customReasons"></div>
+        <button class="btn-add" onclick="addReason()">+ Add reason</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header ch3"><div class="badge">3</div> Lenders Not Selected</div>
+      <div class="card-body">
+        <p style="font-size:0.74rem;color:var(--muted);margin-bottom:9px">Add each lender that was not chosen and the reason why.</p>
+        <div id="notSelectedList" class="dynamic-list"></div>
+        <button class="btn-add" onclick="addNotSelected()">+ Add rejected lender</button>
+      </div>
+    </div>
+
+  </div><!-- /form-panel -->
+
+  <!-- ═══ RIGHT: LIVE PREVIEW ═══ -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <div class="ph-left">
+        <div class="live-dot"></div>
+        <div>
+          <h2>Live Preview</h2>
+          <p>Updates as you type</p>
+        </div>
+      </div>
+      <button class="btn-copy" id="copyBtn" onclick="copyText()">⎘ Copy note</button>
+    </div>
+
+    <div class="preview-body">
+      <div class="preview-doc">
+        <div class="doc-top">
+          <h3>Lender &amp; Product Selection</h3>
+          <p>Best Interests Duty — Client Note</p>
+        </div>
+        <div class="doc-content" id="docContent">
+          <div class="placeholder-msg">
+            <div class="ph-icon">📋</div>
+            <p>Start filling in the form and your note will appear here live.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function countLenders(str) {
+    return str ? str.split(',').map(s => s.trim()).filter(Boolean).length : 0;
+  }
+
+  function lenderStr(str) {
+    const arr = str ? str.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (arr.length === 0) return null;
+    if (arr.length === 1) return arr[0];
+    return arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+  }
+
+  function hl(t) { return `<span class="lender-name">${t}</span>`; }
+
+  function getData() {
+    return {
+      lendersPresented: document.getElementById('lendersPresented').value.trim(),
+      selectedLender:   document.getElementById('selectedLender').value.trim(),
+      loanType:         document.getElementById('loanType').value,
+      cashback:         document.getElementById('cashback').checked,
+      checkedReasons:   Array.from(document.querySelectorAll('.reason:checked')).map(c => c.value),
+      customReasons:    Array.from(document.querySelectorAll('#customReasons .dynamic-item input')).map(i => i.value.trim()).filter(Boolean),
+      notSelected:      Array.from(document.querySelectorAll('#notSelectedList .dynamic-item')).map(row => {
+                          const ins = row.querySelectorAll('input');
+                          return { lender: ins[0]?.value.trim(), reason: ins[1]?.value.trim() };
+                        }).filter(x => x.lender && x.reason)
+    };
+  }
+
+  function updatePreview() {
+    const d = getData();
+    const allReasons = [...d.checkedReasons, ...d.customReasons];
+    if (d.cashback) allReasons.push('Cash back offer was available and confirmed with this lender');
+
+    const el = document.getElementById('docContent');
+
+    if (!d.lendersPresented && !d.selectedLender) {
+      el.innerHTML = `<div class="placeholder-msg"><div class="ph-icon">📋</div><p>Start filling in the form and your note will appear here live.</p></div>`;
+      return;
+    }
+
+    const ls = lenderStr(d.lendersPresented);
+    const verb = countLenders(d.lendersPresented) === 1 ? 'was' : 'were';
+    let html = '';
+
+    html += `<p class="note-para">In considering your needs, requirements, and objectives, a range of lenders were presented and we discussed the pros and cons of each lender, including the interest rate, fees, and overall cost of the loan.</p>`;
+
+    if (ls) {
+      html += `<p class="note-para">${hl(ls)} ${verb} presented, and I provided you with a comparison showing the interest rate, ongoing fees, and the total amount payable if you remained in the loan for <strong>30 years</strong>.</p>`;
+    }
+
+    if (d.selectedLender) {
+      const lt = d.loanType ? ` for your <strong>${d.loanType.toLowerCase()} loan</strong>` : '';
+      html += `<p class="note-para">After a discussion about each of the lenders, you selected ${hl(d.selectedLender)}${lt} based on the following reasons:</p>`;
+    }
+
+    if (allReasons.length > 0) {
+      html += `<ul class="note-bullets">`;
+      allReasons.forEach(r => { html += `<li><div class="b-dot"></div><span>${r}</span></li>`; });
+      html += `</ul>`;
+    }
+
+    if (d.notSelected.length > 0) {
+      html += `<div class="rejected-section"><div class="rejected-label">Lenders not selected</div>`;
+      d.notSelected.forEach(item => {
+        html += `<div class="rejected-item"><div class="r-dot"></div><span>${hl(item.lender)} was not selected because: ${item.reason}</span></div>`;
+      });
+      html += `</div>`;
+    }
+
+    el.innerHTML = html;
+  }
+
+  function getPlainText() {
+    const d = getData();
+    const allReasons = [...d.checkedReasons, ...d.customReasons];
+    if (d.cashback) allReasons.push('Cash back offer was available and confirmed with this lender');
+    const ls = lenderStr(d.lendersPresented);
+    const verb = countLenders(d.lendersPresented) === 1 ? 'was' : 'were';
+
+    let note = 'In considering your needs, requirements, and objectives, a range of lenders were presented and we discussed the pros and cons of each lender, including the interest rate, fees, and overall cost of the loan.\n\n';
+    if (ls) {
+      note += `${ls} ${verb} presented, and I provided you with a comparison showing the interest rate, ongoing fees, and the total amount payable if you remained in the loan for 30 years.`;
+note += '\n\n';
+    }
+    if (d.selectedLender) {
+      note += `After a discussion about each of the lenders, you selected ${d.selectedLender}`;
+      if (d.loanType) note += ` for your ${d.loanType.toLowerCase()} loan`;
+      note += ' based on the following reasons:\n\n';
+    }
+    allReasons.forEach(r => { note += `• ${r}\n`; });
+    if (d.notSelected.length > 0) {
+      note += '\n';
+      d.notSelected.forEach(item => { note += `• ${item.lender} was not selected because: ${item.reason}\n`; });
+    }
+    return note;
+  }
+
+  function copyText() {
+    navigator.clipboard.writeText(getPlainText()).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '⎘ Copy note'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function addReason() {
+    const list = document.getElementById('customReasons');
+    const div = document.createElement('div');
+    div.className = 'dynamic-item';
+    div.innerHTML = `<input type="text" placeholder="Refer to handover notes..." oninput="updatePreview()">
+      <button class="btn-remove" onclick="this.parentElement.remove();updatePreview()">✕</button>`;
+    list.appendChild(div);
+    updatePreview();
+  }
+
+  function addNotSelected() {
+    const list = document.getElementById('notSelectedList');
+    const div = document.createElement('div');
+    div.className = 'dynamic-item';
+    div.innerHTML = `
+      <input type="text" placeholder="Lender" style="max-width:100px" oninput="updatePreview()">
+      <input type="text" placeholder="Reason not selected" oninput="updatePreview()">
+      <button class="btn-remove" onclick="this.parentElement.remove();updatePreview()">✕</button>`;
+    list.appendChild(div);
+    updatePreview();
+  }
+
+  // Auto-add one mandatory additional reason row
+  addReason();
+  updatePreview();
+</script>
+</body>
+</html>

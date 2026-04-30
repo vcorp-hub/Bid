@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Best Interest Duty – Note Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1C1C1C;
+    --navy-mid: #2e2e2e;
+    --gold: #F2D16B;
+    --gold-light: #f7df8f;
+    --cream: #f5f8f0;
+    --cream-dark: #e4ecd6;
+    --green: #D8E8C2;
+    --green-dark: #c2d9a8;
+    --text: #1C1C1C;
+    --muted: #6b7280;
+    --border: #cddcb0;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--green); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: var(--navy); padding: 22px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo-mark {
+    width: 44px; height: 44px; background: var(--gold); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lora', serif; font-size: 22px; color: var(--navy); flex-shrink: 0;
+  }
+  header h1 { font-family: 'Lora', serif; font-size: 20px; color: var(--white); letter-spacing: 0.02em; }
+  header p { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .reset-btn {
+    background: transparent; border: 1.5px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.6); font-family: 'DM Sans', sans-serif; font-size: 12px;
+    font-weight: 500; padding: 8px 18px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: rgba(255,255,255,0.5); color: var(--white); background: rgba(255,255,255,0.06); }
+
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: calc(100vh - 79px); }
+  .builder { padding: 32px 40px 60px; overflow-y: auto; border-right: 1px solid var(--border); background: var(--green); }
+
+  .preview-panel { background: var(--white); display: flex; flex-direction: column; }
+  .preview-header {
+    background: var(--navy-mid); padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .preview-header-left { display: flex; flex-direction: column; gap: 2px; }
+  .preview-header span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.55); font-weight: 600; }
+  .para-count { font-size: 11px; color: rgba(255,255,255,0.35); }
+  .copy-btn {
+    background: var(--gold); border: none; color: var(--navy);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+    padding: 8px 18px; border-radius: 5px; cursor: pointer; transition: background 0.2s;
+  }
+  .copy-btn:hover { background: var(--gold-light); }
+
+  .preview-body { padding: 28px 26px; flex: 1; overflow-y: auto; font-size: 13.5px; line-height: 1.8; color: var(--text); }
+  .preview-body p { margin-bottom: 16px; }
+  .preview-body .placeholder {
+    color: #bbb; font-style: italic; border: 1px dashed #ddd; border-radius: 6px;
+    padding: 28px; text-align: center; font-size: 13px; margin-top: 20px;
+  }
+  .note-header { border-bottom: 2px solid var(--cream-dark); margin-bottom: 20px; padding-bottom: 16px; }
+  .note-header .note-title { font-family: 'Lora', serif; font-size: 15px; color: var(--navy); margin-bottom: 4px; }
+  .note-header .note-meta { font-size: 11.5px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; }
+
+  /* Scenario switcher */
+  .scenario-switcher {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0;
+    border: 2px solid var(--navy); border-radius: 10px; overflow: hidden; margin-bottom: 0;
+  }
+  .scenario-btn {
+    padding: 14px 12px; text-align: center; cursor: pointer;
+    background: var(--white); transition: all 0.18s; border: none; font-family: 'DM Sans', sans-serif;
+  }
+  .scenario-btn:first-child { border-right: 1px solid var(--navy); }
+  .scenario-btn .sc-icon { font-size: 20px; margin-bottom: 5px; }
+  .scenario-btn .sc-label { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .scenario-btn .sc-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .scenario-btn.selected { background: var(--navy); }
+  .scenario-btn.selected .sc-label { color: var(--gold); }
+  .scenario-btn.selected .sc-sub { color: rgba(255,255,255,0.5); }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--navy); margin-bottom: 14px; margin-top: 32px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label:first-child { margin-top: 0; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; margin-top: -8px; }
+
+  .big-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .big-btn {
+    border: 2px solid var(--cream-dark); border-radius: 12px; background: var(--white);
+    padding: 16px 14px; cursor: pointer; text-align: center; transition: all 0.2s;
+  }
+  .big-btn:hover { border-color: var(--gold); }
+  .big-btn.selected { border-color: var(--gold); background: #fdfaf0; box-shadow: 0 3px 16px rgba(242,209,107,0.25); }
+  .big-btn .btn-icon { font-size: 22px; margin-bottom: 6px; }
+  .big-btn .btn-label { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+  .big-btn .btn-sub { font-size: 11px; color: var(--muted); }
+  .big-btn.selected .btn-label { color: var(--navy); }
+
+  .card {
+    background: var(--white); border: 1.5px solid var(--cream-dark); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 9px; cursor: pointer; transition: all 0.18s;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .card:hover { border-color: var(--gold); box-shadow: 0 2px 10px rgba(242,209,107,0.15); }
+  .card.selected { border-color: var(--gold); background: #fdfaf0; box-shadow: 0 2px 12px rgba(242,209,107,0.22); }
+  .card .check {
+    width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%;
+    flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s; background: var(--white);
+  }
+  .card.selected .check { background: var(--gold); border-color: var(--gold); }
+  .card.selected .check::after { content: '✓'; font-size: 11px; color: var(--navy); font-weight: 700; }
+  .card-content { flex: 1; }
+  .card-title { font-size: 13.5px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .card-preview { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .input-single { margin-bottom: 10px; }
+  .input-group {
+    background: var(--white); border: 1.5px solid var(--cream-dark); border-radius: 10px; padding: 13px 15px;
+  }
+  .input-group label {
+    font-size: 11px; font-weight: 700; color: var(--muted); display: block;
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.07em;
+  }
+  .input-group input, .input-group select {
+    width: 100%; border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 8px 11px;
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text);
+    outline: none; transition: border-color 0.18s; background: #f9fdf4;
+  }
+  .input-group input:focus, .input-group select:focus { border-color: var(--gold); background: #fdfaf0; }
+
+  .pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .pill {
+    border: 1.5px solid var(--cream-dark); background: var(--white); border-radius: 20px;
+    padding: 6px 15px; font-size: 12.5px; font-weight: 500; cursor: pointer;
+    transition: all 0.18s; color: var(--text); font-family: 'DM Sans', sans-serif;
+  }
+  .pill:hover { border-color: var(--gold); }
+  .pill.selected { background: var(--navy); border-color: var(--navy); color: var(--white); }
+
+  .date-chip {
+    display: inline-flex; align-items: center; gap: 6px; background: var(--white);
+    border: 1.5px solid var(--cream-dark); border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; color: var(--navy); font-weight: 500; margin-bottom: 10px; width: 100%;
+  }
+  .date-chip .date-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); display: block; margin-bottom: 1px; }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: var(--white); padding: 12px 24px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; pointer-events: none; opacity: 0;
+    transition: opacity 0.3s; z-index: 100; border-left: 4px solid var(--gold); white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+  .input-prefix-wrap { position: relative; }
+  .input-prefix-wrap .prefix {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    font-size: 13.5px; color: var(--muted); font-weight: 600; pointer-events: none; z-index: 1;
+  }
+  .input-prefix-wrap input { padding-left: 22px !important; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">B</div>
+    <div>
+      <h1>Best Interest Duty — Note Builder</h1>
+      <p>Purchase · Refinance · Construction · Automated Compliance Notes</p>
+    </div>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+</header>
+
+<div class="layout">
+  <div class="builder">
+
+    <!-- DATE -->
+    <div class="section-label" style="margin-top:0">Date of Advice</div>
+    <div class="date-chip">
+      <span style="font-size:15px">📅</span>
+      <div><span class="date-label">Today's Date</span><span id="todayDate"></span></div>
+    </div>
+
+    <!-- SCENARIO -->
+    <div class="section-label">Scenario</div>
+    <div class="scenario-switcher">
+      <div class="scenario-btn selected" id="sc_purchase" onclick="selectScenario('purchase')">
+        <div class="sc-icon">🏡</div>
+        <div class="sc-label">Purchase</div>
+        <div class="sc-sub">New property purchase</div>
+      </div>
+      <div class="scenario-btn" id="sc_refinance" onclick="selectScenario('refinance')">
+        <div class="sc-icon">🔄</div>
+        <div class="sc-label">Refinance</div>
+        <div class="sc-sub">Refinance existing loan</div>
+      </div>
+      <div class="scenario-btn" id="sc_construction" onclick="selectScenario('construction')" style="border-left:1px solid var(--navy)">
+        <div class="sc-icon">🏗️</div>
+        <div class="sc-label">Construction</div>
+        <div class="sc-sub">Build on existing land</div>
+      </div>
+    </div>
+
+    <!-- PROPERTY TYPE -->
+    <div class="section-label">Property Type</div>
+    <div class="big-toggle">
+      <div class="big-btn selected" id="pt_oo" onclick="selectBig('proptype','oo','pt_')">
+        <div class="btn-icon">🏠</div>
+        <div class="btn-label">Owner Occupied</div>
+        <div class="btn-sub">Client lives in the property</div>
+      </div>
+      <div class="big-btn" id="pt_inv" onclick="selectBig('proptype','inv','pt_')">
+        <div class="btn-icon">🏢</div>
+        <div class="btn-label">Investment</div>
+        <div class="btn-sub">Rental / investment property</div>
+      </div>
+    </div>
+
+    <!-- APPLICANTS -->
+    <div class="section-label">Number of Applicants</div>
+    <div class="big-toggle">
+      <div class="big-btn selected" id="ap_single" onclick="selectApplicants('single')">
+        <div class="btn-icon">👤</div>
+        <div class="btn-label">Single Applicant</div>
+        <div class="btn-sub">Applicant 1 only</div>
+      </div>
+      <div class="big-btn" id="ap_joint" onclick="selectApplicants('joint')">
+        <div class="btn-icon">👥</div>
+        <div class="btn-label">Joint Applicants</div>
+        <div class="btn-sub">Applicant 1 &amp; Applicant 2</div>
+      </div>
+    </div>
+
+    <!-- APPLICANT NAMES -->
+    <div class="section-label">Applicant Names</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Applicant 1</label>
+        <input type="text" id="name1" placeholder="Full name" oninput="render()">
+      </div>
+      <div class="input-group hidden" id="name2Group">
+        <label>Applicant 2</label>
+        <input type="text" id="name2" placeholder="Full name" oninput="render()">
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PURCHASE-ONLY FIELDS
+    ══════════════════════════════════════════════════ -->
+    <div id="purchaseFields">
+
+      <!-- PURCHASE DETAILS -->
+      <div class="section-label">Purchase Details</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Purchase Price</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="purchasePrice" placeholder="e.g. 850,000" oninput="render()"></div>
+        </div>
+        <div class="input-group">
+          <label>Loan Amount</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="loanAmount" placeholder="e.g. 680,000" oninput="render()"></div>
+        </div>
+      </div>
+
+      <!-- PURPOSE -->
+      <div class="section-label">Purpose of Application</div>
+      <div class="card selected" id="purpose_aip" onclick="selectCard('purpose','aip')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Approval in Principle (AIP)</div>
+          <div class="card-preview">Requires AIP to bid at auction or make an offer on a property</div>
+        </div>
+      </div>
+      <div class="card" id="purpose_full" onclick="selectCard('purpose','full')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Full Loan Application</div>
+          <div class="card-preview">Proceeding with a full formal loan application</div>
+        </div>
+      </div>
+
+      <!-- DEPOSIT -->
+      <div class="section-label">Deposit</div>
+      <div class="big-toggle">
+        <div class="big-btn" id="dep_above" onclick="selectDeposit('above')">
+          <div class="btn-icon">✅</div>
+          <div class="btn-label">20% or Above</div>
+          <div class="btn-sub">No LMI required</div>
+        </div>
+        <div class="big-btn" id="dep_below" onclick="selectDeposit('below')">
+          <div class="btn-icon">⚠️</div>
+          <div class="btn-label">Less than 20%</div>
+          <div class="btn-sub">Borrowing over 80%</div>
+        </div>
+      </div>
+
+      <!-- LMI YES/NO -->
+      <div id="lmiYesNoGroup" class="hidden">
+        <div class="section-label">Is LMI Payable?</div>
+        <div class="big-toggle">
+          <div class="big-btn" id="lmi_yes" onclick="selectLmi('yes')">
+            <div class="btn-icon">💰</div>
+            <div class="btn-label">Yes — LMI Payable</div>
+            <div class="btn-sub">Premium to be capitalised into loan</div>
+          </div>
+          <div class="big-btn" id="lmi_no" onclick="selectLmi('no')">
+            <div class="btn-icon">🚫</div>
+            <div class="btn-label">No — LMI Waived</div>
+            <div class="btn-sub">Eligible scheme or guarantee applies</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LMI WAIVER REASONS -->
+      <div id="lmiWaiverGroup" class="hidden">
+        <div class="section-label">Reason LMI is Waived</div>
+        <p class="section-desc">Select all that apply</p>
+        <div class="card" id="lmiw_fhg" onclick="toggleCard('lmiw_fhg')">
+          <div class="check"></div>
+          <div class="card-content">
+            <div class="card-title">First Home Guarantee (FHBG)</div>
+            <div class="card-preview">Federal government scheme — eligible first home buyers, min. 5% deposit. Government guarantees up to 15% of property value.</div>
+          </div>
+        </div>
+        <div class="card" id="lmiw_rhg" onclick="toggleCard('lmiw_rhg')">
+          <div class="check"></div>
+          <div class="card-content">
+            <div class="card-title">Regional First Home Buyer Guarantee (RFHBG)</div>
+            <div class="card-preview">Eligible first home buyers in a qualifying regional area, minimum 5% deposit.</div>
+          </div>
+        </div>
+        <div class="card" id="lmiw_fhfg" onclick="toggleCard('lmiw_fhfg')">
+          <div class="check"></div>
+          <div class="card-content">
+            <div class="card-title">Family Home Guarantee (FHG)</div>
+            <div class="card-preview">Eligible single parents or single legal guardians. Minimum 2% deposit, government guarantees up to 18%.</div>
+          </div>
+        </div>
+        <div class="card" id="lmiw_guarantor" onclick="toggleCard('lmiw_guarantor')">
+          <div class="check"></div>
+          <div class="card-content">
+            <div class="card-title">Guarantor Loan</div>
+            <div class="card-preview">A guarantor provides security from their own property, eliminating the need for LMI.</div>
+          </div>
+        </div>
+        <div class="card" id="lmiw_professional" onclick="toggleCard('lmiw_professional')">
+          <div class="check"></div>
+          <div class="card-content">
+            <div class="card-title">Professional LMI Waiver</div>
+            <div class="card-preview">Eligible professions (e.g. medical, legal, accounting) qualify for an LMI waiver with selected lenders.</div>
+          </div>
+        </div>
+        <div class="card" id="lmiw_lenderwaiver" onclick="toggleCard('lmiw_lenderwaiver')">
+          <div class="check"></div>
+          <div class="card-content">
+            <div class="card-title">Lender-Specific Waiver / Promotion</div>
+            <div class="card-preview">The selected lender is offering an LMI waiver under a specific promotion or product policy.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #purchaseFields -->
+
+    <!-- ══════════════════════════════════════════════════
+         REFINANCE-ONLY FIELDS
+    ══════════════════════════════════════════════════ -->
+    <div id="refinanceFields" class="hidden">
+
+      <!-- CURRENT LOAN DETAILS -->
+      <div class="section-label">Current Loan Details</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Current Lender</label>
+          <input type="text" id="currentLender" placeholder="e.g. Commonwealth Bank" oninput="render()">
+        </div>
+        <div class="input-group">
+          <label>Remaining Term</label>
+          <input type="text" id="remainingTerm" placeholder="e.g. 24 years" oninput="render()">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Current Loan Balance</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="currentBalance" placeholder="e.g. 540,000" oninput="render()"></div>
+        </div>
+      </div>
+
+      <!-- REFINANCE OBJECTIVES -->
+      <div class="section-label">Refinance Objectives</div>
+      <p class="section-desc">Select all that apply</p>
+      <div class="card" id="obj_betterrate" onclick="toggleCard('obj_betterrate')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Secure a Better Interest Rate</div>
+          <div class="card-preview">Move to a more competitive rate to reduce interest costs</div>
+        </div>
+      </div>
+      <div class="card" id="obj_lowerrepayment" onclick="toggleCard('obj_lowerrepayment')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Reduce Monthly Repayments</div>
+          <div class="card-preview">Lower the ongoing repayment amount to improve cash flow</div>
+        </div>
+      </div>
+      <div class="card" id="obj_extendterm" onclick="toggleCard('obj_extendterm')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Extend Loan Term</div>
+          <div class="card-preview">Reset the loan term to further reduce minimum repayments (note: more interest paid over the life of the loan)</div>
+        </div>
+      </div>
+      <div class="card" id="obj_cashback" onclick="toggleCard('obj_cashback')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Access a Cashback Offer</div>
+          <div class="card-preview">Take advantage of a cashback promotion offered by the new lender</div>
+        </div>
+      </div>
+      <div class="card" id="obj_cashout" onclick="toggleCard('obj_cashout')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Cash Out Equity</div>
+          <div class="card-preview">Release equity from the property for a specific purpose</div>
+        </div>
+      </div>
+      <div class="input-group hidden" id="cashoutPurposeGroup" style="margin-top:-2px; margin-bottom:9px;">
+        <label>Purpose of Cash Out</label>
+        <input type="text" id="cashoutPurpose" placeholder="e.g. renovations, investment, education" oninput="render()">
+      </div>
+      <div class="card" id="obj_debtcon" onclick="toggleCard('obj_debtcon')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Debt Consolidation</div>
+          <div class="card-preview">Consolidate other debts (e.g. personal loans, credit cards) into the home loan at a lower rate</div>
+        </div>
+      </div>
+      <div class="input-group hidden" id="debtconDetailsGroup" style="margin-top:-2px; margin-bottom:9px;">
+        <label>Debts Being Consolidated</label>
+        <input type="text" id="debtconDetails" placeholder="e.g. $15,000 car loan, $8,000 credit card" oninput="render()">
+      </div>
+
+      <!-- LOAN AMOUNT (REFINANCE) -->
+      <div class="section-label">Loan Details</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>New Loan Amount</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="refLoanAmount" placeholder="e.g. 540,000" oninput="render()"></div>
+        </div>
+        <div class="input-group">
+          <label>Property Value</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="propertyValue" placeholder="e.g. 900,000" oninput="render()"></div>
+        </div>
+      </div>
+
+    </div><!-- end #refinanceFields -->
+
+    <!-- ══════════════════════════════════════════════════
+         CONSTRUCTION-ONLY FIELDS
+    ══════════════════════════════════════════════════ -->
+    <div id="constructionFields" class="hidden">
+
+      <!-- BUILD DETAILS -->
+      <div class="section-label">Build Details</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Construction Cost</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="constructionCost" placeholder="e.g. 320,000" oninput="render()"></div>
+        </div>
+        <div class="input-group">
+          <label>Total Loan Amount</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="constructionLoanAmount" placeholder="e.g. 700,000" oninput="render()"></div>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Estimated Completed Value</label>
+          <div class="input-prefix-wrap"><span class="prefix">$</span><input type="text" id="completedValue" placeholder="e.g. 1,100,000" oninput="render()"></div>
+        </div>
+        <div class="input-group">
+          <label>Expected Occupancy (years)</label>
+          <input type="text" id="occupancyYears" placeholder="e.g. 5" oninput="render()">
+        </div>
+      </div>
+
+      <!-- LENDER STRATEGY -->
+      <div class="section-label">Lender Strategy</div>
+      <p class="section-desc">Select all that apply</p>
+      <div class="card selected" id="cs_refinanceexisting" onclick="toggleCard('cs_refinanceexisting')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Option 1 — Refinance to a New Lender</div>
+          <div class="card-preview">New lender refinances the existing land loan and provides construction funding. Additional refinance fees discussed.</div>
+        </div>
+      </div>
+      <div class="card selected" id="cs_staywithcurrent" onclick="toggleCard('cs_staywithcurrent')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Option 2 — Stay with Current Lender</div>
+          <div class="card-preview">Remain with existing lender and add construction facility. A comparison of both options was presented.</div>
+        </div>
+      </div>
+
+      <!-- CONSTRUCTION-SPECIFIC OBJECTIVES -->
+      <div class="section-label">Client Objectives</div>
+      <p class="section-desc">Select all that apply</p>
+      <div class="card" id="co_progressivedrawdown" onclick="toggleCard('co_progressivedrawdown')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Progressive Drawdowns During Build</div>
+          <div class="card-preview">Interest charged only on funds drawn at each stage, keeping costs low during construction</div>
+        </div>
+      </div>
+      <div class="card" id="co_convertpi" onclick="toggleCard('co_convertpi')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Convert to P&amp;I After Completion</div>
+          <div class="card-preview">Loan converts to principal and interest on completion to build equity</div>
+        </div>
+      </div>
+      <div class="card" id="co_paydown" onclick="toggleCard('co_paydown')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Maximise Repayments Post-Completion</div>
+          <div class="card-preview">Intends to pay as much as possible into the loan once living in the property</div>
+        </div>
+      </div>
+      <div class="card" id="co_variablepostbuild" onclick="toggleCard('co_variablepostbuild')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Variable Rate Post-Build</div>
+          <div class="card-preview">Prefers variable rate to allow maximum repayments and take advantage of rate reductions</div>
+        </div>
+      </div>
+      <div class="card" id="co_reqsunchanged" onclick="toggleCard('co_reqsunchanged')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Requirements Unchanged from Previous Advice</div>
+          <div class="card-preview">Client confirmed their objectives and requirements remain consistent with prior conversations</div>
+        </div>
+      </div>
+
+    </div><!-- end #constructionFields -->
+
+    <!-- ══════════════════════════════════════════════════
+         SHARED FIELDS (both scenarios)
+    ══════════════════════════════════════════════════ -->
+
+    <!-- REPAYMENT STRUCTURE -->
+    <div id="sharedRepayment">
+    <div class="section-label">Repayment Structure</div>
+    <div class="pill-group">
+      <div class="pill selected" onclick="selectPill('repayment','pi',this)">Principal &amp; Interest</div>
+      <div class="pill" onclick="selectPill('repayment','io',this)">Interest Only</div>
+    </div>
+
+    <div id="ioOptions" class="hidden">
+      <div class="section-label">Interest Only Period</div>
+      <div class="pill-group">
+        <div class="pill selected" onclick="selectPill('ioterm','1',this)">1 Year</div>
+        <div class="pill" onclick="selectPill('ioterm','2',this)">2 Years</div>
+        <div class="pill" onclick="selectPill('ioterm','3',this)">3 Years</div>
+        <div class="pill" onclick="selectPill('ioterm','5',this)">5 Years</div>
+      </div>
+      <div class="section-label">Reason for Interest Only</div>
+      <p class="section-desc">Select all that apply</p>
+      <div class="card" id="ior_cashflow" onclick="toggleCard('ior_cashflow')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Manage Cash Flow</div>
+          <div class="card-preview">Keep repayments lower in the short term to manage household cash flow</div>
+        </div>
+      </div>
+      <div class="card" id="ior_taxded" onclick="toggleCard('ior_taxded')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Maximise Tax Deductibility</div>
+          <div class="card-preview">Maximise deductible interest on the investment loan while directing surplus funds to non-deductible debt</div>
+        </div>
+      </div>
+      <div class="card" id="ior_offset" onclick="toggleCard('ior_offset')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Funds Held in Offset</div>
+          <div class="card-preview">Surplus funds held in offset account to reduce effective interest while retaining liquidity</div>
+        </div>
+      </div>
+      <div class="card" id="ior_construction" onclick="toggleCard('ior_construction')">
+        <div class="check"></div>
+        <div class="card-content">
+          <div class="card-title">Construction / Development Phase</div>
+          <div class="card-preview">IO during build period before switching to P&amp;I on completion</div>
+        </div>
+      </div>
+    </div><!-- end ioOptions -->
+    </div><!-- end sharedRepayment -->
+
+    <!-- REPAYMENT FREQUENCY -->
+    <div id="sharedFrequency">
+    <div class="section-label">Repayment Frequency</div>
+    <div class="pill-group">
+      <div class="pill selected" onclick="selectPill('frequency','monthly',this)">Monthly</div>
+      <div class="pill" onclick="selectPill('frequency','fortnightly',this)">Fortnightly</div>
+      <div class="pill" onclick="selectPill('frequency','weekly',this)">Weekly</div>
+    </div>
+    </div><!-- end sharedFrequency -->
+
+    <!-- LOAN FEATURES -->
+    <div class="section-label">Loan Features</div>
+    <p class="section-desc">Select all that apply</p>
+    <div class="card" id="feat_offset" onclick="toggleCard('feat_offset')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Offset / Redraw Facility</div>
+        <div class="card-preview">Savings offset interest; access funds via redraw when needed</div>
+      </div>
+    </div>
+    <!-- Purchase-only feature -->
+    <div class="card purchase-only" id="feat_equity" onclick="toggleCard('feat_equity')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Equity Release from Existing Property</div>
+        <div class="card-preview">Access equity in an existing property to fund the deposit</div>
+      </div>
+    </div>
+    <div class="input-group hidden" id="equityAddressGroup" style="margin-bottom:9px;">
+      <label>Existing Property Address</label>
+      <input type="text" id="equityAddress" placeholder="e.g. 12 Smith St, Sydney NSW 2000" oninput="render()">
+    </div>
+
+    <!-- LOAN TERM -->
+    <div id="sharedTerm">
+    <div class="section-label">Loan Term</div>
+    <div class="pill-group">
+      <div class="pill selected" onclick="selectPill('term','30',this)">30 Years</div>
+      <div class="pill" onclick="selectPill('term','25',this)">25 Years</div>
+      <div class="pill" onclick="selectPill('term','20',this)">20 Years</div>
+      <div class="pill" onclick="selectPill('term','15',this)">15 Years</div>
+    </div>
+    </div><!-- end sharedTerm -->
+
+    <!-- RATE TYPE -->
+    <div class="section-label">Interest Rate Preference</div>
+    <div class="card" id="rate_variable" onclick="selectCard('rate','variable')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Variable Rate Only</div>
+        <div class="card-preview">Benefit from potential rate reductions; offset facility available</div>
+      </div>
+    </div>
+    <div class="card" id="rate_fixed_split" onclick="selectCard('rate','fixed_split')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Fixed / Variable Split</div>
+        <div class="card-preview">Certainty on part of loan with flexibility on the remainder</div>
+      </div>
+    </div>
+    <div class="card" id="rate_fixed" onclick="selectCard('rate','fixed')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Fixed Rate Only</div>
+        <div class="card-preview">Full certainty of repayments for the fixed period</div>
+      </div>
+    </div>
+
+    <!-- LENDER PREFERENCES -->
+    <div class="section-label">Lender Preferences</div>
+    <p class="section-desc">Select all that apply</p>
+    <div class="card" id="lp_nopref" onclick="toggleCard('lp_nopref')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">No Preference on Lender Type</div>
+        <div class="card-preview">Comfortable with any lender, including those without branch access</div>
+      </div>
+    </div>
+    <div class="card" id="lp_branch" onclick="toggleCard('lp_branch')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Prefers Branch Access</div>
+        <div class="card-preview">Would like the option to visit a branch in person</div>
+      </div>
+    </div>
+    <div class="card" id="lp_majors" onclick="toggleCard('lp_majors')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Major Bank Preference</div>
+        <div class="card-preview">Preference for one of the four major banks</div>
+      </div>
+    </div>
+    <!-- Refinance-only lender pref -->
+    <div class="card refinance-only hidden" id="lp_cashback" onclick="toggleCard('lp_cashback')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Preference for Lender Offering Cashback</div>
+        <div class="card-preview">Would prefer a lender currently offering a cashback promotion</div>
+      </div>
+    </div>
+
+    <!-- PRIORITIES -->
+    <div class="section-label">Client Top Priorities</div>
+    <p class="section-desc">Select all that apply — all four are selected by default</p>
+    <div class="card selected" id="pri_maxloan" onclick="toggleCard('pri_maxloan')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Maximum Borrowing Capacity</div>
+        <div class="card-preview">Lender who will approve the greatest loan amount</div>
+      </div>
+    </div>
+    <div class="card selected" id="pri_rate" onclick="toggleCard('pri_rate')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Cheapest Interest Rate</div>
+        <div class="card-preview">Most competitive interest rate available</div>
+      </div>
+    </div>
+    <div class="card selected" id="pri_features" onclick="toggleCard('pri_features')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Loan Features</div>
+        <div class="card-preview">Offset, redraw, flexibility and other features</div>
+      </div>
+    </div>
+    <div class="card selected" id="pri_lowfees" onclick="toggleCard('pri_lowfees')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Low Fees</div>
+        <div class="card-preview">Minimise upfront and ongoing loan fees</div>
+      </div>
+    </div>
+
+    <!-- CREDIT CARD -->
+    <div class="section-label">Credit Card</div>
+    <div class="card" id="cc_yes" onclick="selectCard('cc','yes')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">Credit Card Required</div>
+        <div class="card-preview">A credit card is needed as part of this application</div>
+      </div>
+    </div>
+    <div class="card" id="cc_no" onclick="selectCard('cc','no')">
+      <div class="check"></div>
+      <div class="card-content">
+        <div class="card-title">No Credit Card Required</div>
+        <div class="card-preview">Credit card not needed for this application</div>
+      </div>
+    </div>
+
+  </div><!-- end .builder -->
+
+  <!-- PREVIEW PANEL -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <div class="preview-header-left">
+        <span>Live Note Preview</span>
+        <span class="para-count" id="paraCount">0 paragraphs</span>
+      </div>
+      <button class="copy-btn" onclick="copyNote()">Copy Note</button>
+    </div>
+    <div class="preview-body" id="previewBody">
+      <div class="placeholder">Select a scenario and fill in the details to generate your compliance note.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Note copied to clipboard</div>
+
+<script>
+  // ── Default State ─────────────────────────────────────────────────
+  const defaultState = () => ({
+    scenario: 'purchase',
+    name1: '', name2: '',
+    proptype: 'oo',
+    applicants: 'single',
+    // Purchase
+    purchasePrice: '', loanAmount: '',
+    purpose: 'aip',
+    depositLevel: null,
+    lmiPayable: null,
+    lmiwaivers: {},
+    // Refinance
+    currentLender: '', remainingTerm: '',
+    currentBalance: '',
+    refLoanAmount: '', propertyValue: '',
+    objectives: {},
+    cashoutPurpose: '', debtconDetails: '',
+    // Construction
+    constructionCost: '', constructionLoanAmount: '',
+    completedValue: '', occupancyYears: '',
+    constructionStrategy: { refinanceexisting: true, staywithcurrent: true },
+    constructionObjectives: {},
+    // Shared
+    repayment: 'pi',
+    ioterm: '1',
+    ioreason: {},
+    frequency: 'monthly',
+    features: {},
+    term: '30',
+    rate: null,
+    lenderPref: {},
+    priorities: { maxloan: true, rate: true, features: true, lowfees: true },
+    cc: null,
+    equityAddress: ''
+  });
+
+  let state = defaultState();
+
+  // ── Date ──────────────────────────────────────────────────────────
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('todayDate').textContent = dateStr;
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  function subject() {
+    const n1 = state.name1.trim() || 'Applicant 1';
+    if (state.applicants === 'single') return n1;
+    return `${n1} and ${state.name2.trim() || 'Applicant 2'}`;
+  }
+  function you() { return state.applicants === 'joint' ? 'you both' : 'you'; }
+  function your() { return 'your'; }
+  function Your() { return 'Your'; }
+
+  // Format a raw string as currency — strips non-digits, adds $ and commas
+  function fmt(val) {
+    if (!val) return '';
+    const num = val.replace(/[^0-9.]/g, '');
+    if (!num) return val; // return as-is if not numeric (e.g. already formatted)
+    const parts = parseFloat(num).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return '$' + parts;
+  }
+
+  // ── Scenario switcher ─────────────────────────────────────────────
+  function selectScenario(val) {
+    state.scenario = val;
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('sc_' + val).classList.add('selected');
+    document.getElementById('purchaseFields').classList.toggle('hidden', val !== 'purchase');
+    document.getElementById('refinanceFields').classList.toggle('hidden', val !== 'refinance');
+    document.getElementById('constructionFields').classList.toggle('hidden', val !== 'construction');
+    document.querySelectorAll('.purchase-only').forEach(el => el.classList.toggle('hidden', val !== 'purchase'));
+    document.querySelectorAll('.refinance-only').forEach(el => el.classList.toggle('hidden', val !== 'refinance'));
+    // Hide shared repayment/term sections for construction (IO during build is automatic)
+    const hideShared = val === 'construction';
+    ['sharedRepayment','sharedFrequency','sharedTerm'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden', hideShared);
+    });
+    render();
+  }
+
+  function selectApplicants(val) {
+    state.applicants = val;
+    document.querySelectorAll('[id^="ap_"]').forEach(b => b.classList.remove('selected'));
+    document.getElementById('ap_' + val).classList.add('selected');
+    document.getElementById('name2Group').classList.toggle('hidden', val === 'single');
+    render();
+  }
+
+  function selectBig(key, val, prefix) {
+    state[key] = val;
+    document.querySelectorAll(`[id^="${prefix}"]`).forEach(b => b.classList.remove('selected'));
+    document.getElementById(prefix + val).classList.add('selected');
+    render();
+  }
+
+  function selectDeposit(val) {
+    state.depositLevel = val;
+    state.lmiPayable = null;
+    state.lmiwaivers = {};
+    document.querySelectorAll('[id^="dep_"]').forEach(b => b.classList.remove('selected'));
+    document.getElementById('dep_' + val).classList.add('selected');
+    document.getElementById('lmiYesNoGroup').classList.toggle('hidden', val !== 'below');
+    document.getElementById('lmiWaiverGroup').classList.add('hidden');
+    document.querySelectorAll('[id^="lmi_"]').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('[id^="lmiw_"]').forEach(c => c.classList.remove('selected'));
+    render();
+  }
+
+  function selectLmi(val) {
+    state.lmiPayable = val;
+    state.lmiwaivers = {};
+    document.querySelectorAll('[id^="lmi_"]').forEach(b => b.classList.remove('selected'));
+    document.getElementById('lmi_' + val).classList.add('selected');
+    document.getElementById('lmiWaiverGroup').classList.toggle('hidden', val !== 'no');
+    document.querySelectorAll('[id^="lmiw_"]').forEach(c => c.classList.remove('selected'));
+    render();
+  }
+
+  function selectCard(group, value) {
+    state[group] = value;
+    document.querySelectorAll(`[id^="${group}_"]`).forEach(el => el.classList.remove('selected'));
+    const t = document.getElementById(`${group}_${value}`);
+    if (t) t.classList.add('selected');
+    render();
+  }
+
+  function toggleCard(id) {
+    const el = document.getElementById(id);
+    const prefix = id.match(/^(feat_|lp_|pri_|ior_|lmiw_|obj_|cs_|co_)/);
+    if (!prefix) return;
+    const p = prefix[0];
+    const key = id.replace(p, '');
+    const group = p === 'feat_' ? 'features' : p === 'lp_' ? 'lenderPref' : p === 'pri_' ? 'priorities'
+                : p === 'ior_' ? 'ioreason' : p === 'lmiw_' ? 'lmiwaivers' : p === 'obj_' ? 'objectives'
+                : p === 'cs_' ? 'constructionStrategy' : 'constructionObjectives';
+    state[group][key] = !state[group][key];
+    el.classList.toggle('selected', state[group][key]);
+    if (id === 'feat_equity') document.getElementById('equityAddressGroup').classList.toggle('hidden', !state.features['equity']);
+    if (id === 'obj_cashout') document.getElementById('cashoutPurposeGroup').classList.toggle('hidden', !state.objectives['cashout']);
+    if (id === 'obj_debtcon') document.getElementById('debtconDetailsGroup').classList.toggle('hidden', !state.objectives['debtcon']);
+    render();
+  }
+
+  function selectPill(group, value, el) {
+    state[group] = value;
+    el.closest('.pill-group').querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    if (group === 'repayment') document.getElementById('ioOptions').classList.toggle('hidden', value !== 'io');
+    render();
+  }
+
+  // Text inputs
+  ['name1','name2','equityAddress','purchasePrice','loanAmount',
+   'currentLender','remainingTerm','currentBalance',
+   'refLoanAmount','propertyValue','cashoutPurpose','debtconDetails',
+   'constructionCost','constructionLoanAmount','completedValue','occupancyYears'].forEach(id => {
+    document.getElementById(id).addEventListener('input', e => { state[id] = e.target.value; render(); });
+  });
+
+  // ── RENDER ────────────────────────────────────────────────────────
+  function render() {
+    const propLabel = state.proptype === 'oo' ? 'owner-occupied' : 'investment';
+    const paragraphs = [];
+    const subj = subject();
+
+    if (state.scenario === 'purchase') {
+      renderPurchase(paragraphs, propLabel, subj);
+      renderShared(paragraphs);
+    } else if (state.scenario === 'refinance') {
+      renderRefinance(paragraphs, propLabel, subj);
+      renderShared(paragraphs);
+    } else {
+      renderConstruction(paragraphs, subj);
+      renderSharedConstruction(paragraphs);
+    }
+
+    const scenarioTitle = state.scenario === 'purchase'
+      ? (propLabel === 'owner-occupied' ? 'Owner Occupied Purchase' : 'Investment Purchase')
+      : state.scenario === 'refinance'
+        ? (propLabel === 'owner-occupied' ? 'Owner Occupied Refinance' : 'Investment Refinance')
+        : 'Construction Loan';
+
+    const price = state.scenario === 'purchase' ? fmt(state.purchasePrice.trim())
+                : state.scenario === 'refinance' ? fmt(state.propertyValue.trim())
+                : fmt(state.completedValue.trim());
+
+    const noteHeaderHTML = `
+      <div class="note-header">
+        <div class="note-title">Best Interest Duty Note — ${scenarioTitle}</div>
+        <div class="note-meta">
+          <span>📅 ${dateStr}</span>
+          <span>👤 ${subj}</span>
+          ${price ? `<span>🏷 ${price}</span>` : ''}
+        </div>
+      </div>`;
+
+    document.getElementById('previewBody').innerHTML = noteHeaderHTML + paragraphs.map(p => `<p>${p}</p>`).join('');
+    document.getElementById('paraCount').textContent = `${paragraphs.length} paragraph${paragraphs.length !== 1 ? 's' : ''}`;
+  }
+
+  // ── Purchase render ───────────────────────────────────────────────
+  function renderPurchase(paragraphs, propLabel, subj) {
+    const price = fmt(state.purchasePrice.trim());
+    const loan = fmt(state.loanAmount.trim());
+    const addr = state.equityAddress.trim() || '[property address]';
+
+    // Opening
+    let opening = `${subj}, you are looking to purchase a new ${propLabel} property`;
+    if (price) opening += ` with a purchase price of ${price}`;
+    if (loan) opening += ` and a proposed loan amount of ${loan}`;
+    opening += state.purpose === 'aip'
+      ? '. You require an approval in principle (AIP) so that you have the confidence to bid at auction or make an offer on a property.'
+      : '. We are proceeding with a full formal loan application.';
+    paragraphs.push(opening);
+
+    if (state.proptype === 'inv') {
+      paragraphs.push(`You are purchasing this property as an investment with the intention of generating rental income.`);
+    }
+
+    // Deposit / LMI
+    if (state.depositLevel === 'above') {
+      paragraphs.push(`You have saved a 20% deposit or more so ${you()} will not have to bear any lenders mortgage insurance (LMI) cost.`);
+    } else if (state.depositLevel === 'below' && state.lmiPayable === 'yes') {
+      paragraphs.push(`You have saved less than 20% deposit and would be borrowing over 80% of the purchase price. We discussed lenders mortgage insurance (LMI) which would be payable. This is a type of insurance which protects the lender — it is important to note this does not protect you. We discussed the approximate cost of the LMI premium and how this could be paid. You selected to have the LMI premium capitalised, which means the premium will be added to ${your()} loan amount. ${Your()} loan repayments will be based on the higher loan amount which includes the LMI premium.`);
+    } else if (state.depositLevel === 'below' && state.lmiPayable === 'no') {
+      const w = state.lmiwaivers;
+      const lines = [];
+      if (w['fhg'])          lines.push(`the First Home Guarantee (FHBG), a federal government scheme that allows eligible first home buyers to purchase with as little as a 5% deposit. Under this scheme the government guarantees up to 15% of the property value, meaning lenders mortgage insurance (LMI) is not required. We confirmed ${you()} meet the eligibility criteria for this scheme`);
+      if (w['rhg'])          lines.push(`the Regional First Home Buyer Guarantee (RFHBG), which allows eligible first home buyers purchasing in a qualifying regional area to purchase with a minimum 5% deposit without paying LMI, supported by a government guarantee`);
+      if (w['fhfg'])         lines.push(`the Family Home Guarantee (FHG), available to eligible single parents or single legal guardians, allowing a purchase with as little as a 2% deposit. The government guarantees up to 18% of the property value, removing the requirement for LMI`);
+      if (w['guarantor'])    lines.push(`a guarantor arrangement where a guarantor (typically a family member) provides security from their own property to cover the deposit shortfall. As a result, ${you()} are not required to pay lenders mortgage insurance (LMI). We discussed the obligations and risks to the guarantor and confirmed they have been advised to seek independent legal and financial advice`);
+      if (w['professional']) lines.push(`an LMI waiver available to ${your()} eligible profession through the lender's professional package. Subject to lender policy, ${you()} qualify for a waiver of the LMI premium despite borrowing over 80% of the property value`);
+      if (w['lenderwaiver']) lines.push(`a lender-specific LMI waiver or promotional offer, under which the lender has agreed to waive the LMI premium for eligible borrowers meeting their specific policy criteria`);
+
+      if (lines.length === 0) {
+        paragraphs.push(`Although ${you()} have saved less than 20% deposit and would be borrowing over 80% of the purchase price, lenders mortgage insurance (LMI) will not be payable due to an applicable scheme, guarantee, or waiver. We discussed this with ${you()} and confirmed ${your()} eligibility.`);
+      } else if (lines.length === 1) {
+        paragraphs.push(`Although ${you()} have saved less than 20% deposit and would be borrowing over 80% of the purchase price, lenders mortgage insurance (LMI) will not be payable. This is because ${you()} are applying under ${lines[0]}.`);
+      } else {
+        paragraphs.push(`Although ${you()} have saved less than 20% deposit and would be borrowing over 80% of the purchase price, lenders mortgage insurance (LMI) will not be payable. This is because ${you()} are accessing: ${lines.map((s,i)=>`(${i+1}) ${s}`).join('; ')}.`);
+      }
+    }
+
+    // Equity
+    if (state.features['equity']) {
+      paragraphs.push(`You are also looking to access equity in ${your()} existing property at ${addr} to use as a deposit contribution for this purchase.`);
+    }
+  }
+
+  // ── Refinance render ──────────────────────────────────────────────
+  function renderRefinance(paragraphs, propLabel, subj) {
+    const lender = state.currentLender.trim() || '[current lender]';
+    const term = state.remainingTerm.trim() || '[x] years';
+    const balance = fmt(state.currentBalance.trim());
+    const newLoan = fmt(state.refLoanAmount.trim());
+    const propVal = fmt(state.propertyValue.trim());
+    const o = state.objectives;
+
+    // Opening
+    let opening = `${subj}, you are looking to refinance your current ${propLabel} loan`;
+    if (balance) opening += ` of ${balance}`;
+    opening += ` currently held with ${lender}`;
+    opening += `. The remaining term on ${your()} current loan is ${term}.`;
+    paragraphs.push(opening);
+
+    // Objectives
+    const fixedParts = [];
+    if (o['betterrate'])     fixedParts.push(`secure a more competitive interest rate to reduce the overall cost of ${your()} loan`);
+    if (o['lowerrepayment']) fixedParts.push(`reduce ${your()} monthly repayments to improve cash flow`);
+    if (o['extendterm'])     fixedParts.push(`extend ${your()} loan term to further lower minimum repayments`);
+    if (o['cashback'])       fixedParts.push('take advantage of a cashback offer available from the new lender');
+    if (o['cashout']) {
+      const purpose = state.cashoutPurpose.trim() || '[specified purpose]';
+      fixedParts.push(`access equity in ${your()} property for the purpose of ${purpose}`);
+    }
+    if (o['debtcon']) {
+      const debts = state.debtconDetails.trim() || '[debts to be consolidated]';
+      fixedParts.push(`consolidate existing debts (${debts}) into ${your()} home loan to reduce the overall interest rate on those obligations`);
+    }
+
+    if (fixedParts.length > 0) {
+      const objStr = fixedParts.length === 1
+        ? fixedParts[0]
+        : fixedParts.slice(0,-1).join('; ') + '; and ' + fixedParts[fixedParts.length-1];
+      paragraphs.push(`By refinancing, ${you()} are looking to ${objStr}.`);
+    }
+
+    // Extend term note
+    if (o['extendterm']) {
+      paragraphs.push(`You understand that by extending ${your()} loan term, ${your()} minimum monthly repayments will be lower compared to ${your()} current structure; however, ${you()} will pay more interest over the life of the loan as a result.`);
+    }
+
+    // Debt consolidation note
+    if (o['debtcon']) {
+      paragraphs.push(`You understand that by consolidating these debts into ${your()} home loan, while the interest rate will be lower, the repayment period will be extended. This means ${you()} may pay more in total interest over the life of the loan. We discussed these trade-offs and ${you()} wish to proceed.`);
+    }
+
+    // New loan amount
+    if (newLoan || propVal) {
+      let loanLine = `The proposed new loan amount is`;
+      if (newLoan) loanLine += ` ${newLoan}`;
+      if (propVal) loanLine += `${newLoan ? ' against' : ' secured against'} a property valued at ${propVal}`;
+      loanLine += '.';
+      paragraphs.push(loanLine);
+    }
+  }
+
+  // ── Shared render (both scenarios) ───────────────────────────────
+  function renderShared(paragraphs) {
+    const repStr = state.repayment === 'pi' ? 'Principal and Interest (P&I)' : 'Interest Only (IO)';
+    const freqStr = { monthly: 'monthly', fortnightly: 'fortnightly', weekly: 'weekly' }[state.frequency];
+
+    // Repayment structure
+    let repPara = `You would like a lender who offers ${repStr} repayments with ${freqStr} repayment frequency. `;
+    if (state.repayment === 'pi') {
+      repPara += `You would like P&I repayments because ${you()} would like to pay down ${your()} loan and build equity over time.`;
+    } else {
+      repPara += `You have elected Interest Only repayments for an initial period of ${state.ioterm} year${Number(state.ioterm) > 1 ? 's' : ''}.`;
+      const reasons = [];
+      if (state.ioreason['cashflow'])    reasons.push(`to help manage ${your()} household cash flow by keeping repayments lower in the short term`);
+      if (state.ioreason['taxded'])      reasons.push(`to maximise the tax deductibility of ${your()} investment loan interest, allowing ${you()} to direct surplus funds toward non-deductible debt. You understand that while interest-only repayments reduce the monthly payment during the interest-only period, the total interest payable over the life of the loan will be higher compared to a principal and interest structure`);
+      if (state.ioreason['offset'])      reasons.push(`as surplus funds will be held in an offset account to reduce effective interest while retaining liquidity and flexibility`);
+      if (state.ioreason['construction'])reasons.push(`as the property is in a construction or development phase, with the intention to revert to P&I repayments upon completion`);
+      if (reasons.length > 0) {
+        repPara += ` This structure was discussed and agreed upon ` + (reasons.length === 1 ? reasons[0] : reasons.slice(0,-1).join('; ') + '; and ' + reasons[reasons.length-1]) + '.';
+      }
+    }
+    paragraphs.push(repPara);
+
+    // Offset
+    if (state.features['offset']) {
+      paragraphs.push(`You would like an offset/redraw facility with ${your()} loan so that ${your()} savings can offset the interest charged on ${your()} loan, reducing the overall interest payable and giving ${you()} flexibility to access funds if required.`);
+    }
+
+    // Loan term
+    paragraphs.push(`You would like a ${state.term}-year loan term as this will keep ${your()} minimum repayments as low as possible.`);
+
+    // Rate
+    if (state.rate === 'variable') {
+      paragraphs.push(`You would like a variable interest rate so that ${you()} are able to take full benefit of an offset facility and any potential rate reductions. You understand that while a variable rate may decrease, ${your()} interest rate and repayments may also increase if the variable rate rises.`);
+    } else if (state.rate === 'fixed_split') {
+      paragraphs.push(`Given ${your()} concern about rising interest rates, ${you()} would like a fixed/variable split loan so that ${you()} have some certainty over a portion of ${your()} repayments while retaining flexibility on the remaining balance. You understand that even though a variable rate provides the possible benefit of rate reductions, ${your()} variable rate and repayments may increase if rates rise.`);
+    } else if (state.rate === 'fixed') {
+      paragraphs.push(`You would like a fixed interest rate for the certainty of knowing ${your()} exact repayments for the fixed period. You understand that breaking a fixed rate loan early may incur break costs.`);
+    }
+
+    // Lender preferences
+    const lenderParts = [];
+    if (state.lenderPref['nopref'])    lenderParts.push(`${you()} have no strong preference on the type of lender and are comfortable with lenders who do not offer branch access`);
+    if (state.lenderPref['branch'])    lenderParts.push(`${you()} would prefer a lender who offers branch access`);
+    if (state.lenderPref['majors'])    lenderParts.push(`${you()} have a preference for one of the four major banks`);
+    if (state.lenderPref['cashback'])  lenderParts.push(`${you()} would prefer a lender who is currently offering a cashback promotion`);
+    if (lenderParts.length > 0) {
+      paragraphs.push('Regarding lender preferences, ' + lenderParts.join('; ') + '.');
+    }
+
+    // Priorities
+    const priParts = [];
+    if (state.priorities['maxloan']) priParts.push('a lender who will loan the maximum amount possible');
+    if (state.priorities['rate'])    priParts.push('the most competitive interest rate available');
+    if (state.priorities['features'])priParts.push('loan features (such as offset, redraw and flexibility)');
+    if (state.priorities['lowfees']) priParts.push('low fees and charges');
+    if (priParts.length > 0) {
+      paragraphs.push(`You have identified that ${your()} top priorities when selecting a lender are: ${priParts.join('; ')}.`);
+    }
+
+    // General
+    paragraphs.push(`You would like a competitive interest rate and low fees to reduce the overall costs associated with ${your()} loan.`);
+
+    // Credit card
+    if (state.cc === 'yes') paragraphs.push('You do require a credit card as part of this loan application.');
+    else if (state.cc === 'no') paragraphs.push('You do not require a credit card as part of this loan application.');
+  }
+
+  // ── Construction render ───────────────────────────────────────────
+  function renderConstruction(paragraphs, subj) {
+    const buildCost    = fmt(state.constructionCost.trim());
+    const totalLoan    = fmt(state.constructionLoanAmount.trim());
+    const compVal      = fmt(state.completedValue.trim());
+    const occupancy    = state.occupancyYears.trim() || '[x]';
+    const cs           = state.constructionStrategy;
+    const co           = state.constructionObjectives;
+
+    // Opening
+    paragraphs.push(`${subj}, you are now seeking to build on ${your()} land and require construction financing.`);
+
+    // Build cost / loan
+    if (buildCost || totalLoan || compVal) {
+      let details = 'The proposed construction cost is';
+      if (buildCost) details += ` ${buildCost}`;
+      if (totalLoan) details += `${buildCost ? ', resulting in' : ' with'} a total loan amount of ${totalLoan}`;
+      if (compVal)   details += `. The estimated completed value of the property is ${compVal}`;
+      details += '.';
+      paragraphs.push(details);
+    }
+
+    // Requirements unchanged
+    if (co['reqsunchanged']) {
+      paragraphs.push(`You confirmed that ${your()} requirements and objectives remain unchanged from ${your()} previous conversation with us.`);
+    }
+
+    // Primary objective
+    if (co['progressivedrawdown']) {
+      paragraphs.push(`${your().charAt(0).toUpperCase() + your().slice(1)} primary objective is to obtain financing that allows progressive drawdowns aligned with the stages of construction. You understand that under a construction loan, interest is charged only on the funds drawn at each stage, which keeps ${your()} initial repayments low during the build period.`);
+    }
+
+    // Post-build conversion
+    if (co['convertpi']) {
+      paragraphs.push(`Upon completion of construction, the loan will convert to a principal and interest (P&I) structure. You expressed a preference for this arrangement, as it reduces upfront costs during the build while ensuring long-term affordability and equity growth once the property is completed.`);
+    }
+
+    // Occupancy & pay-down intent
+    if (co['paydown']) {
+      paragraphs.push(`You intend to occupy this property for approximately ${occupancy} years and have expressed ${your()} intention to make maximum repayments into the loan during that time to reduce the outstanding balance as quickly as possible.`);
+    }
+
+    // Variable rate preference post-build
+    if (co['variablepostbuild']) {
+      paragraphs.push(`For this reason, ${you()} prefer a variable interest rate post-construction, which will allow ${you()} to make additional repayments without restriction and benefit from any future interest rate reductions.`);
+    }
+
+    // Lender strategy
+    if (cs['refinanceexisting'] || cs['staywithcurrent']) {
+      let stratPara = 'We discussed two possible options for structuring this loan. ';
+      if (cs['refinanceexisting']) stratPara += `The first was to approach new lenders who would refinance ${your()} existing land loan and provide the construction funding. We discussed the additional fees that would be applicable in this scenario, including discharge and registration costs, and the average timeframes lenders are currently taking for construction loan approvals. `;
+      if (cs['staywithcurrent'])  stratPara += `The second option was to remain with ${your()} current lender and add a construction facility to the existing land loan. `;
+      if (cs['refinanceexisting'] && cs['staywithcurrent']) stratPara += `A comparison of both options was presented to ${you()} outlining the costs, rates, and approval timelines of each.`;
+      paragraphs.push(stratPara.trim());
+    }
+
+    // Priorities
+    paragraphs.push(`You have confirmed that ${your()} top priorities are a lender who will provide the highest loan amount and the most competitive interest rate available for construction loans.`);
+  }
+
+  // ── Shared sections for construction (subset — no repayment/term pills) ──
+  function renderSharedConstruction(paragraphs) {
+    // Offset
+    if (state.features['offset']) {
+      paragraphs.push(`You would like an offset/redraw facility with ${your()} loan so that ${your()} savings can offset the interest charged on ${your()} loan, reducing the overall interest payable and giving ${you()} flexibility to access funds if required.`);
+    }
+
+    // Rate
+    if (state.rate === 'variable') {
+      paragraphs.push(`You would like a variable interest rate so that ${you()} are able to take full benefit of any potential rate reductions and make unlimited additional repayments. You understand that while a variable rate may decrease, ${your()} interest rate and repayments may also increase if the variable rate rises.`);
+    } else if (state.rate === 'fixed_split') {
+      paragraphs.push(`You would like a fixed/variable split loan so that ${you()} have some certainty over a portion of ${your()} repayments while retaining flexibility on the remaining balance. You understand that even though a variable rate provides the possible benefit of rate reductions, ${your()} variable rate and repayments may increase if rates rise.`);
+    } else if (state.rate === 'fixed') {
+      paragraphs.push(`You would like a fixed interest rate for the certainty of knowing ${your()} exact repayments for the fixed period. You understand that breaking a fixed rate loan early may incur break costs.`);
+    }
+
+    // Lender preferences
+    const lenderParts = [];
+    if (state.lenderPref['nopref'])   lenderParts.push(`${you()} have no strong preference on the type of lender and are comfortable with lenders who do not offer branch access`);
+    if (state.lenderPref['branch'])   lenderParts.push(`${you()} would prefer a lender who offers branch access`);
+    if (state.lenderPref['majors'])   lenderParts.push(`${you()} have a preference for one of the four major banks`);
+    if (lenderParts.length > 0) {
+      paragraphs.push('Regarding lender preferences, ' + lenderParts.join('; ') + '.');
+    }
+
+    // General
+    paragraphs.push(`You would like a competitive interest rate and low fees to reduce the overall costs associated with ${your()} loan.`);
+
+    // Credit card
+    if (state.cc === 'yes') paragraphs.push('You do require a credit card as part of this loan application.');
+    else if (state.cc === 'no') paragraphs.push('You do not require a credit card as part of this loan application.');
+  }
+
+  // ── Copy ──────────────────────────────────────────────────────────
+  function copyNote() {
+    const subj = subject();
+    const propLabel = state.proptype === 'oo' ? 'Owner Occupied' : 'Investment';
+    const scenarioTitle = state.scenario === 'purchase' ? `${propLabel} Purchase`
+                        : state.scenario === 'refinance' ? `${propLabel} Refinance`
+                        : 'Construction Loan';
+    const loanRef = state.scenario === 'purchase'
+      ? (state.purchasePrice ? 'Purchase Price: ' + state.purchasePrice + '\n' : '') + (state.loanAmount ? 'Loan Amount: ' + state.loanAmount + '\n' : '')
+      : state.scenario === 'refinance'
+        ? (state.currentLender ? 'Current Lender: ' + state.currentLender + '\n' : '') + (state.refLoanAmount ? 'New Loan Amount: ' + state.refLoanAmount + '\n' : '')
+        : (state.constructionLoanAmount ? 'Construction Loan: ' + state.constructionLoanAmount + '\n' : '') + (state.completedValue ? 'Est. Completed Value: ' + state.completedValue + '\n' : '');
+    const header = `BEST INTEREST DUTY NOTE — ${scenarioTitle.toUpperCase()}\nDate: ${dateStr}\nApplicant(s): ${subj}\n${loanRef}\n`;
+    const body = Array.from(document.getElementById('previewBody').querySelectorAll('p')).map(p => p.textContent).join('\n\n');
+    navigator.clipboard.writeText(header + body).then(() => {
+      const el = document.getElementById('toast');
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    });
+  }
+
+  // ── Reset ─────────────────────────────────────────────────────────
+  function resetAll() {
+    state = defaultState();
+    document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.big-btn.selected').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.pill.selected').forEach(p => p.classList.remove('selected'));
+    document.querySelectorAll('.scenario-btn.selected').forEach(b => b.classList.remove('selected'));
+
+    document.getElementById('sc_purchase').classList.add('selected');
+    document.getElementById('pt_oo').classList.add('selected');
+    document.getElementById('ap_single').classList.add('selected');
+    document.getElementById('purpose_aip').classList.add('selected');
+    ['pri_maxloan','pri_rate','pri_features','pri_lowfees'].forEach(id => document.getElementById(id).classList.add('selected'));
+
+    document.querySelector('[onclick="selectPill(\'repayment\',\'pi\',this)"]').classList.add('selected');
+    document.querySelector('[onclick="selectPill(\'frequency\',\'monthly\',this)"]').classList.add('selected');
+    document.querySelector('[onclick="selectPill(\'ioterm\',\'1\',this)"]').classList.add('selected');
+    document.querySelector('[onclick="selectPill(\'term\',\'30\',this)"]').classList.add('selected');
+
+    ['name1','name2','equityAddress','purchasePrice','loanAmount',
+     'currentLender','remainingTerm','currentBalance',
+     'refLoanAmount','propertyValue','cashoutPurpose','debtconDetails',
+     'constructionCost','constructionLoanAmount','completedValue','occupancyYears'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+
+    document.getElementById('purchaseFields').classList.remove('hidden');
+    document.getElementById('refinanceFields').classList.add('hidden');
+    document.getElementById('constructionFields').classList.add('hidden');
+    document.getElementById('ioOptions').classList.add('hidden');
+    document.getElementById('name2Group').classList.add('hidden');
+    document.getElementById('equityAddressGroup').classList.add('hidden');
+    document.getElementById('lmiYesNoGroup').classList.add('hidden');
+    document.getElementById('lmiWaiverGroup').classList.add('hidden');
+    document.getElementById('cashoutPurposeGroup').classList.add('hidden');
+    document.getElementById('debtconDetailsGroup').classList.add('hidden');
+    document.querySelectorAll('.purchase-only').forEach(el => el.classList.remove('hidden'));
+    document.querySelectorAll('.refinance-only').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('[id^="dep_"],[id^="lmi_"],[id^="lmiw_"]').forEach(el => el.classList.remove('selected'));
+    ['cs_refinanceexisting','cs_staywithcurrent'].forEach(id => document.getElementById(id).classList.add('selected'));
+
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
